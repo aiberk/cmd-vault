@@ -20,18 +20,22 @@ pub fn get_file_path() -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("."))
         .join(".cmd-vault.json");
 
-    if old_path.exists() && !new_path.exists() {
-        if let Err(e) = migrate_config(&old_path, &new_path) {
-            eprintln!("Warning: Could not migrate config file: {}", e);
-            return old_path; // Fall back to old location
-        }
+    if old_path.exists()
+        && !new_path.exists()
+        && let Err(e) = migrate_config(&old_path, &new_path)
+    {
+        eprintln!("Warning: Could not migrate config file: {}", e);
+        return old_path; // Fall back to old location
     }
 
     new_path
 }
 
 /// Migrate config file from old location to new platform-appropriate location
-fn migrate_config(old_path: &std::path::Path, new_path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+fn migrate_config(
+    old_path: &std::path::Path,
+    new_path: &std::path::Path,
+) -> Result<(), Box<dyn std::error::Error>> {
     // Create new directory if needed
     if let Some(parent) = new_path.parent() {
         std::fs::create_dir_all(parent)?;
@@ -39,12 +43,16 @@ fn migrate_config(old_path: &std::path::Path, new_path: &std::path::Path) -> Res
 
     // Copy file contents
     std::fs::copy(old_path, new_path)?;
-    
-    println!("✅ Migrated config from {} to {}", old_path.display(), new_path.display());
-    
+
+    println!(
+        "✅ Migrated config from {} to {}",
+        old_path.display(),
+        new_path.display()
+    );
+
     // Optionally remove old file (commented out for safety)
     // std::fs::remove_file(old_path)?;
-    
+
     Ok(())
 }
 

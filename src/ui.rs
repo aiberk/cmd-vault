@@ -1,8 +1,8 @@
 use ratatui::{
+    Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
-    Frame,
 };
 
 use crate::app::{App, InputMode};
@@ -109,9 +109,7 @@ fn draw_sidebar(f: &mut Frame, app: &mut App, area: Rect) {
 
     let highlight_style = if app.has_search() {
         // Dim the sidebar highlight when search results are active
-        Style::default()
-            .bg(Color::Indexed(236))
-            .fg(Color::DarkGray)
+        Style::default().bg(Color::Indexed(236)).fg(Color::DarkGray)
     } else {
         Style::default()
             .bg(Color::Indexed(24))
@@ -193,22 +191,22 @@ fn draw_search_results(f: &mut Frame, app: &mut App, area: Rect) {
 fn draw_command_details(f: &mut Frame, app: &App, area: Rect) {
     let all_items = app.all_items_sorted();
 
-    if let Some(selected_index) = app.state.selected() {
-        if selected_index < all_items.len() {
-            let current_item = &all_items[selected_index];
-            let detail_text = format!(
-                "\n 💻 COMMAND CONFIGURATION:\n\n   {}\n\n\n 📝 METADATA SPECIFICATION:\n\n   {}",
-                current_item.command, current_item.desc
-            );
-            let details = Paragraph::new(detail_text).block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .title(" Command Details ")
-                    .border_style(Style::default().fg(Color::DarkGray)),
-            );
-            f.render_widget(details, area);
-            return;
-        }
+    if let Some(selected_index) = app.state.selected()
+        && selected_index < all_items.len()
+    {
+        let current_item = &all_items[selected_index];
+        let detail_text = format!(
+            "\n 💻 COMMAND CONFIGURATION:\n\n   {}\n\n\n 📝 METADATA SPECIFICATION:\n\n   {}",
+            current_item.command, current_item.desc
+        );
+        let details = Paragraph::new(detail_text).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" Command Details ")
+                .border_style(Style::default().fg(Color::DarkGray)),
+        );
+        f.render_widget(details, area);
+        return;
     }
 
     let empty_notice = Paragraph::new("\n\n   Select a command to view details.").block(
@@ -459,7 +457,6 @@ fn draw_placeholder_modal(f: &mut Frame, app: &App) {
     }
 }
 
-
 /// Reusable numbered-option modal component.
 /// `title` — the modal border title
 /// `border_color` — color for the modal border
@@ -529,10 +526,7 @@ fn draw_copied_confirm(f: &mut Frame, app: &App) {
         app.last_copied.clone()
     };
 
-    let text = format!(
-        "\n   {}\n\n\n   Press any key to continue...",
-        display_cmd
-    );
+    let text = format!("\n   {}\n\n\n   Press any key to continue...", display_cmd);
     let paragraph = Paragraph::new(text)
         .block(block)
         .style(Style::default().fg(Color::White));
@@ -575,13 +569,7 @@ fn draw_expanded_view(f: &mut Frame, app: &App) {
 
         let inner_layout = Layout::default()
             .direction(Direction::Vertical)
-            .constraints(
-                [
-                    Constraint::Length(5),
-                    Constraint::Min(3),
-                ]
-                .as_ref(),
-            )
+            .constraints([Constraint::Length(5), Constraint::Min(3)].as_ref())
             .margin(2)
             .split(popup_area);
 

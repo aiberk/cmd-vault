@@ -1,5 +1,4 @@
 /// Application constants to avoid magic numbers.
-
 /// Default timestamp value used for legacy items without creation date
 pub const DEFAULT_TIMESTAMP: u64 = 0;
 

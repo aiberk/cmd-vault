@@ -1,0 +1,14 @@
+# Rust code formatting configuration (stable features only)
+# See https://rust-lang.github.io/rustfmt/
+
+# Line width and indentation
+max_width = 100
+tab_spaces = 4
+
+# Newline style
+newline_style = "Unix"
+
+# Misc formatting  
+remove_nested_parens = true
+use_field_init_shorthand = true
+use_try_shorthand = true

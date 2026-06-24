@@ -1,5 +1,4 @@
 /// Shared utilities for search, sorting, and validation logic.
-
 use crate::models::CommandItem;
 
 /// Available sort strategies.
@@ -35,7 +34,7 @@ pub fn find_matching_items<'a>(items: &'a [CommandItem], query: &str) -> Vec<&'a
     if query.is_empty() {
         return Vec::new();
     }
-    
+
     let query_lower = query.to_lowercase();
     items
         .iter()
@@ -51,7 +50,7 @@ pub fn find_matching_items_owned(items: &[CommandItem], query: &str) -> Vec<Comm
     if query.is_empty() {
         return Vec::new();
     }
-    
+
     let query_lower = query.to_lowercase();
     items
         .iter()
@@ -65,17 +64,15 @@ pub fn find_matching_items_owned(items: &[CommandItem], query: &str) -> Vec<Comm
 
 /// Sorts items according to the specified sort mode.
 /// Modifies the vector in place for efficiency.
-pub fn sort_items(items: &mut Vec<CommandItem>, mode: SortMode) {
+pub fn sort_items(items: &mut [CommandItem], mode: SortMode) {
     match mode {
-        SortMode::AZ => items.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase())),
-        SortMode::ZA => items.sort_by(|a, b| b.name.to_lowercase().cmp(&a.name.to_lowercase())),
-        SortMode::NewestFirst => items.sort_by(|a, b| b.created_at.cmp(&a.created_at)),
-        SortMode::OldestFirst => items.sort_by(|a, b| a.created_at.cmp(&b.created_at)),
-        SortMode::ShortestFirst => items.sort_by(|a, b| a.command.len().cmp(&b.command.len())),
+        SortMode::AZ => items.sort_by_key(|a| a.name.to_lowercase()),
+        SortMode::ZA => items.sort_by_key(|a| std::cmp::Reverse(a.name.to_lowercase())),
+        SortMode::NewestFirst => items.sort_by_key(|a| std::cmp::Reverse(a.created_at)),
+        SortMode::OldestFirst => items.sort_by_key(|a| a.created_at),
+        SortMode::ShortestFirst => items.sort_by_key(|a| a.command.len()),
     }
 }
-
-
 
 /// Checks if a name already exists in the items list (case-insensitive).
 /// Returns true if a duplicate is found.
@@ -85,8 +82,6 @@ pub fn has_duplicate_name(items: &[CommandItem], name: &str) -> bool {
         .iter()
         .any(|item| item.name.to_lowercase() == name_lower)
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -118,25 +113,25 @@ mod tests {
     #[test]
     fn test_find_matching_items() {
         let items = create_test_items();
-        
+
         // Test search by name
         let results = find_matching_items(&items, "alpha");
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].name, "Alpha Command");
-        
+
         // Test search by command
         let results = find_matching_items(&items, "zebra");
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].name, "Zebra Command");
-        
+
         // Test case-insensitive
         let results = find_matching_items(&items, "ALPHA");
         assert_eq!(results.len(), 1);
-        
+
         // Test empty query
         let results = find_matching_items(&items, "");
         assert_eq!(results.len(), 0);
-        
+
         // Test no matches
         let results = find_matching_items(&items, "nonexistent");
         assert_eq!(results.len(), 0);
@@ -145,13 +140,13 @@ mod tests {
     #[test]
     fn test_sort_items() {
         let mut items = create_test_items();
-        
+
         // Test A-Z sorting
         sort_items(&mut items, SortMode::AZ);
         assert_eq!(items[0].name, "Alpha Command");
         assert_eq!(items[1].name, "Beta Long Command");
         assert_eq!(items[2].name, "Zebra Command");
-        
+
         // Test newest first
         sort_items(&mut items, SortMode::NewestFirst);
         assert_eq!(items[0].created_at, 2000); // Alpha (newest)
@@ -162,11 +157,11 @@ mod tests {
     #[test]
     fn test_has_duplicate_name() {
         let items = create_test_items();
-        
+
         // Test existing name (case-insensitive)
         assert!(has_duplicate_name(&items, "alpha command"));
         assert!(has_duplicate_name(&items, "ZEBRA COMMAND"));
-        
+
         // Test non-existing name
         assert!(!has_duplicate_name(&items, "New Command"));
     }

@@ -77,7 +77,10 @@ mod tests {
     fn test_complex_placeholder_command() {
         let cmd = "scp <local_file> <user>@<host>:<remote_path>";
         let placeholders = extract_placeholders(cmd);
-        assert_eq!(placeholders, vec!["local_file", "user", "host", "remote_path"]);
+        assert_eq!(
+            placeholders,
+            vec!["local_file", "user", "host", "remote_path"]
+        );
         let values = vec![
             "app.tar.gz".to_string(),
             "deploy".to_string(),

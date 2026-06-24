@@ -2,13 +2,13 @@ use ratatui::widgets::ListState;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::constants::{
-    DEFAULT_TIMESTAMP, DEFAULT_STATUS, MAX_NAME_LENGTH, MAX_COMMAND_LENGTH, MAX_DESC_LENGTH
+    DEFAULT_STATUS, DEFAULT_TIMESTAMP, MAX_COMMAND_LENGTH, MAX_DESC_LENGTH, MAX_NAME_LENGTH,
 };
 use crate::models::CommandItem;
 use crate::storage;
-use crate::utils::{find_matching_items_owned, sort_items, has_duplicate_name};
 /// Available sort strategies (re-exported from utils).
 pub use crate::utils::SortMode;
+use crate::utils::{find_matching_items_owned, has_duplicate_name, sort_items};
 
 /// The active input/interaction mode of the application.
 #[derive(PartialEq)]
@@ -29,8 +29,6 @@ pub enum InputMode {
     /// Expanded detail view of the selected item.
     ExpandedView,
 }
-
-
 
 /// Holds state for the interactive placeholder fill-in flow.
 pub struct PlaceholderState {
@@ -74,8 +72,7 @@ impl App {
             vec![CommandItem {
                 name: "FFmpeg Compress Video".into(),
                 command: "ffmpeg -i input.mp4 -vcodec libx265 -crf 28 output.mp4".into(),
-                desc: "Compresses mp4 video using the efficient H.265 codec to save space."
-                    .into(),
+                desc: "Compresses mp4 video using the efficient H.265 codec to save space.".into(),
                 created_at: DEFAULT_TIMESTAMP,
             }]
         });
@@ -113,7 +110,6 @@ impl App {
         results
     }
 
-
     /// Returns true if there's an active search query.
     pub fn has_search(&self) -> bool {
         !self.search_query.is_empty()
@@ -142,7 +138,7 @@ impl App {
         {
             let deleted_name = self.items[master_idx].name.clone();
             self.items.remove(master_idx);
-            
+
             // Add proper error handling for save operation
             if let Err(e) = storage::save_items(&self.items) {
                 self.status_message = format!("⚠️ Failed to save changes: {}", e);
@@ -184,14 +180,27 @@ impl App {
         }
 
         if self.new_desc.len() > MAX_DESC_LENGTH {
-            self.status_message = format!("⚠️ Description too long (max {} chars)", MAX_DESC_LENGTH);
+            self.status_message =
+                format!("⚠️ Description too long (max {} chars)", MAX_DESC_LENGTH);
             return;
         }
 
         // Basic input sanitization - remove control characters
-        let sanitized_name = self.new_name.chars().filter(|c| !c.is_control()).collect::<String>();
-        let sanitized_command = self.new_command.chars().filter(|c| !c.is_control()).collect::<String>();
-        let sanitized_desc = self.new_desc.chars().filter(|c| !c.is_control()).collect::<String>();
+        let sanitized_name = self
+            .new_name
+            .chars()
+            .filter(|c| !c.is_control())
+            .collect::<String>();
+        let sanitized_command = self
+            .new_command
+            .chars()
+            .filter(|c| !c.is_control())
+            .collect::<String>();
+        let sanitized_desc = self
+            .new_desc
+            .chars()
+            .filter(|c| !c.is_control())
+            .collect::<String>();
 
         if sanitized_name.is_empty() || sanitized_command.is_empty() {
             self.status_message = "⚠️ Invalid characters in name or command!".into();
@@ -241,7 +250,13 @@ impl App {
                 return;
             }
             let i = match self.search_results_state.selected() {
-                Some(i) => if i >= len - 1 { 0 } else { i + 1 },
+                Some(i) => {
+                    if i >= len - 1 {
+                        0
+                    } else {
+                        i + 1
+                    }
+                }
                 None => 0,
             };
             self.search_results_state.select(Some(i));
@@ -252,7 +267,13 @@ impl App {
                 return;
             }
             let i = match self.state.selected() {
-                Some(i) => if i >= len - 1 { 0 } else { i + 1 },
+                Some(i) => {
+                    if i >= len - 1 {
+                        0
+                    } else {
+                        i + 1
+                    }
+                }
                 None => 0,
             };
             self.state.select(Some(i));
@@ -268,7 +289,13 @@ impl App {
                 return;
             }
             let i = match self.search_results_state.selected() {
-                Some(i) => if i == 0 { len - 1 } else { i - 1 },
+                Some(i) => {
+                    if i == 0 {
+                        len - 1
+                    } else {
+                        i - 1
+                    }
+                }
                 None => 0,
             };
             self.search_results_state.select(Some(i));
@@ -279,7 +306,13 @@ impl App {
                 return;
             }
             let i = match self.state.selected() {
-                Some(i) => if i == 0 { len - 1 } else { i - 1 },
+                Some(i) => {
+                    if i == 0 {
+                        len - 1
+                    } else {
+                        i - 1
+                    }
+                }
                 None => 0,
             };
             self.state.select(Some(i));

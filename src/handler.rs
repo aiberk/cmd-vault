@@ -2,9 +2,9 @@ use copypasta::{ClipboardContext, ClipboardProvider};
 use crossterm::event::{self, Event, KeyCode};
 
 use crate::app::{App, InputMode, PlaceholderState};
-use crate::constants::{DEFAULT_STATUS, SEARCH_MODE_STATUS, FORM_MODE_STATUS};
-use crate::utils::SortMode;
+use crate::constants::{DEFAULT_STATUS, FORM_MODE_STATUS, SEARCH_MODE_STATUS};
 use crate::placeholders;
+use crate::utils::SortMode;
 
 /// Possible outcomes from processing a key event.
 pub enum HandleResult {
@@ -114,20 +114,18 @@ fn handle_confirm_delete_mode(app: &mut App, code: KeyCode) {
 fn handle_form_mode(app: &mut App, code: KeyCode) {
     match code {
         KeyCode::Esc => app.input_mode = InputMode::Normal,
-        KeyCode::Tab | KeyCode::Enter => {
-            match app.input_mode {
-                InputMode::AddName => app.input_mode = InputMode::AddCommand,
-                InputMode::AddCommand => app.input_mode = InputMode::AddDesc,
-                InputMode::AddDesc => {
-                    if code == KeyCode::Enter {
-                        app.submit_new_command();
-                    } else {
-                        app.input_mode = InputMode::AddName;
-                    }
+        KeyCode::Tab | KeyCode::Enter => match app.input_mode {
+            InputMode::AddName => app.input_mode = InputMode::AddCommand,
+            InputMode::AddCommand => app.input_mode = InputMode::AddDesc,
+            InputMode::AddDesc => {
+                if code == KeyCode::Enter {
+                    app.submit_new_command();
+                } else {
+                    app.input_mode = InputMode::AddName;
                 }
-                _ => {}
             }
-        }
+            _ => {}
+        },
         KeyCode::Backspace => match app.input_mode {
             InputMode::AddName => {
                 app.new_name.pop();
@@ -310,19 +308,17 @@ fn copy_to_clipboard(app: &mut App, text: &str) {
 
     // Fallback to copypasta crate
     match ClipboardContext::new() {
-        Ok(mut ctx) => {
-            match ctx.set_contents(text.to_string()) {
-                Ok(()) => {
-                    app.last_copied = text.to_string();
-                    app.input_mode = InputMode::CopiedConfirm;
-                    app.status_message = "✅ Copied to clipboard!".into();
-                }
-                Err(e) => {
-                    app.input_mode = InputMode::Normal;
-                    app.status_message = format!("❌ Failed to copy to clipboard: {}", e);
-                }
+        Ok(mut ctx) => match ctx.set_contents(text.to_string()) {
+            Ok(()) => {
+                app.last_copied = text.to_string();
+                app.input_mode = InputMode::CopiedConfirm;
+                app.status_message = "✅ Copied to clipboard!".into();
             }
-        }
+            Err(e) => {
+                app.input_mode = InputMode::Normal;
+                app.status_message = format!("❌ Failed to copy to clipboard: {}", e);
+            }
+        },
         Err(e) => {
             app.input_mode = InputMode::Normal;
             app.status_message = format!("❌ Failed to access clipboard: {}", e);
