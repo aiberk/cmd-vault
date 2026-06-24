@@ -1,0 +1,608 @@
+# CmdVault C++ Implementation Plan
+
+## 🏗️ Project Structure
+
+```
+cmd-vault-cpp/
+├── CMakeLists.txt              # Build configuration
+├── include/
+│   ├── app.hpp                 # Application state and logic
+│   ├── cli.hpp                 # Command-line interface
+│   ├── constants.hpp           # Application constants
+│   ├── handler.hpp             # Event handling
+│   ├── models.hpp              # Data structures
+│   ├── placeholders.hpp        # Variable substitution
+│   ├── storage.hpp             # File I/O operations
+│   ├── ui.hpp                  # Terminal UI components
+│   └── utils.hpp               # Utilities and search
+├── src/
+│   ├── main.cpp
+│   ├── app.cpp
+│   ├── cli.cpp
+│   ├── handler.cpp
+│   ├── models.cpp
+│   ├── placeholders.cpp
+│   ├── storage.cpp
+│   ├── ui.cpp
+│   └── utils.cpp
+├── third_party/                # External dependencies
+│   ├── json/                   # nlohmann/json
+│   ├── cxxopts/               # CLI argument parsing
+│   └── ftxui/                 # Terminal UI library
+└── tests/
+    ├── test_models.cpp
+    ├── test_storage.cpp
+    └── test_utils.cpp
+```
+
+## 📦 Required Dependencies
+
+### Core Libraries
+```cmake
+# CMakeLists.txt dependencies
+find_package(PkgConfig REQUIRED)
+
+# JSON handling
+find_package(nlohmann_json REQUIRED)
+
+# CLI argument parsing
+find_package(cxxopts REQUIRED)
+
+# Terminal UI (FTXUI - modern C++ TUI library)
+find_package(ftxui REQUIRED)
+
+# Cross-platform utilities
+find_package(Threads REQUIRED)
+```
+
+### Installation Commands
+```bash
+# Ubuntu/Debian
+sudo apt-get install build-essential cmake pkg-config
+sudo apt-get install nlohmann-json3-dev
+
+# macOS with Homebrew  
+brew install cmake nlohmann-json cxxopts
+
+# FTXUI (build from source)
+git clone https://github.com/ArthurSonzogni/FTXUI.git
+cd FTXUI && mkdir build && cd build
+cmake .. && make -j4 && sudo make install
+```
+
+## 🔧 Core Implementation Files
+
+### 1. models.hpp - Data Structures
+```cpp
+#pragma once
+#include <string>
+#include <vector>
+#include <cstdint>
+#include <nlohmann/json.hpp>
+
+namespace cmdvault {
+
+struct CommandItem {
+    std::string name;
+    std::string command;
+    std::string desc;
+    std::uint64_t created_at;
+    
+    // JSON serialization
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CommandItem, name, command, desc, created_at)
+};
+
+enum class SortMode {
+    AZ,
+    ZA, 
+    NewestFirst,
+    OldestFirst,
+    ShortestFirst
+};
+
+enum class InputMode {
+    Normal,
+    Search,
+    AddName,
+    AddCommand, 
+    AddDesc,
+    ConfirmDelete,
+    FillPlaceholder,
+    CopyChoice,
+    CopiedConfirm,
+    SortPicker,
+    ExpandedView
+};
+
+struct PlaceholderState {
+    std::string template_cmd;
+    std::vector<std::string> placeholders;
+    std::vector<std::string> values;
+    std::size_t current_index;
+    std::string current_input;
+};
+
+} // namespace cmdvault
+```
+
+### 2. storage.hpp - File I/O Operations
+```cpp
+#pragma once
+#include "models.hpp"
+#include <filesystem>
+#include <optional>
+
+namespace cmdvault::storage {
+
+std::filesystem::path get_file_path();
+std::optional<std::vector<CommandItem>> load_items();
+bool save_items(const std::vector<CommandItem>& items);
+
+} // namespace cmdvault::storage
+```
+
+### 3. storage.cpp - Implementation  
+```cpp
+#include "storage.hpp"
+#include "constants.hpp"
+#include <fstream>
+#include <iostream>
+
+namespace cmdvault::storage {
+
+std::filesystem::path get_file_path() {
+    auto home = std::getenv("HOME");
+    if (!home) {
+        return std::filesystem::current_path() / VAULT_FILENAME;
+    }
+    return std::filesystem::path(home) / VAULT_FILENAME;
+}
+
+std::optional<std::vector<CommandItem>> load_items() {
+    auto path = get_file_path();
+    if (!std::filesystem::exists(path)) {
+        return std::nullopt;
+    }
+    
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        return std::nullopt;
+    }
+    
+    try {
+        nlohmann::json j;
+        file >> j;
+        return j.get<std::vector<CommandItem>>();
+    } catch (const std::exception& e) {
+        std::cerr << "Error loading commands: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+bool save_items(const std::vector<CommandItem>& items) {
+    auto path = get_file_path();
+    std::ofstream file(path);
+    if (!file.is_open()) {
+        return false;
+    }
+    
+    try {
+        nlohmann::json j = items;
+        file << j.dump(2);  // Pretty print with 2 spaces
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Error saving commands: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+} // namespace cmdvault::storage
+```
+
+### 4. utils.hpp - Search and Sort Logic
+```cpp
+#pragma once
+#include "models.hpp"
+#include <string>
+#include <vector>
+#include <algorithm>
+
+namespace cmdvault::utils {
+
+// Search functions
+std::vector<CommandItem> find_matching_items(
+    const std::vector<CommandItem>& items, 
+    const std::string& query
+);
+
+// Sort functions  
+void sort_items(std::vector<CommandItem>& items, SortMode mode);
+std::string sort_mode_label(SortMode mode);
+
+// Validation
+bool has_duplicate_name(const std::vector<CommandItem>& items, const std::string& name);
+
+// String utilities
+std::string to_lower(const std::string& str);
+bool contains_case_insensitive(const std::string& haystack, const std::string& needle);
+
+} // namespace cmdvault::utils
+```
+
+### 5. placeholders.hpp - Variable System
+```cpp
+#pragma once
+#include <string>
+#include <vector>
+#include <regex>
+
+namespace cmdvault::placeholders {
+
+// Extract all <variable> patterns from command
+std::vector<std::string> extract_placeholders(const std::string& command);
+
+// Replace placeholders with values
+std::string fill_placeholders(
+    const std::string& template_cmd,
+    const std::vector<std::string>& placeholder_names,
+    const std::vector<std::string>& values
+);
+
+// Remove duplicates while preserving order
+std::vector<std::string> deduplicate(const std::vector<std::string>& items);
+
+} // namespace cmdvault::placeholders
+```
+
+### 6. app.hpp - Core Application Logic
+```cpp
+#pragma once
+#include "models.hpp"
+#include <memory>
+#include <optional>
+
+namespace cmdvault {
+
+class App {
+public:
+    App();
+    ~App() = default;
+    
+    // Navigation
+    void next();
+    void previous();
+    void clamp_selection();
+    
+    // Data operations
+    std::vector<CommandItem> all_items_sorted() const;
+    std::vector<CommandItem> search_results() const;
+    std::optional<CommandItem> selected_item() const;
+    
+    // State management
+    bool has_search() const;
+    std::optional<std::string> remove_current_selection();
+    void submit_new_command();
+    void apply_sort(SortMode mode);
+    
+    // Public state (for UI access)
+    std::vector<CommandItem> items;
+    std::size_t selected_index = 0;
+    std::size_t search_selected_index = 0;
+    std::string search_query;
+    InputMode input_mode = InputMode::Normal;
+    std::string new_name, new_command, new_desc;
+    std::string status_message;
+    std::string last_copied;
+    SortMode sort_mode = SortMode::AZ;
+    std::unique_ptr<PlaceholderState> placeholder_state;
+
+private:
+    void load_initial_data();
+};
+
+} // namespace cmdvault
+```
+
+### 7. ui.hpp - Terminal UI with FTXUI
+```cpp
+#pragma once
+#include "app.hpp"
+#include <ftxui/screen/screen.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/component/component.hpp>
+
+namespace cmdvault::ui {
+
+class UI {
+public:
+    UI(App& app);
+    void run();
+
+private:
+    App& app_;
+    
+    // UI Components
+    ftxui::Element render_navbar();
+    ftxui::Element render_sidebar();  
+    ftxui::Element render_details();
+    ftxui::Element render_search_results();
+    ftxui::Element render_status_bar();
+    
+    // Modals
+    ftxui::Element render_form_modal();
+    ftxui::Element render_delete_confirm();
+    ftxui::Element render_placeholder_modal();
+    ftxui::Element render_copy_choice_modal();
+    ftxui::Element render_sort_picker();
+    ftxui::Element render_expanded_view();
+    ftxui::Element render_copied_confirm();
+    
+    // Utilities
+    ftxui::Element draw_option_modal(const std::string& title, 
+                                   const std::vector<std::string>& options);
+    std::string truncate_with_ellipsis(const std::string& text, std::size_t max_len);
+};
+
+} // namespace cmdvault::ui
+```
+
+### 8. handler.hpp - Event Processing
+```cpp
+#pragma once
+#include "app.hpp"
+
+namespace cmdvault::handler {
+
+enum class HandleResult {
+    Continue,
+    Quit
+};
+
+HandleResult handle_events(App& app);
+
+// Mode-specific handlers
+HandleResult handle_normal_mode(App& app, int key);
+void handle_search_mode(App& app, int key);
+void handle_confirm_delete_mode(App& app, int key);
+void handle_form_mode(App& app, int key);
+void handle_placeholder_mode(App& app, int key);
+void handle_copy_choice_mode(App& app, int key);
+void handle_copied_confirm(App& app);
+void handle_sort_picker(App& app, int key);
+void handle_expanded_view(App& app, int key);
+
+// Utilities
+void initiate_copy(App& app);
+void copy_to_clipboard(App& app, const std::string& text);
+
+} // namespace cmdvault::handler
+```
+
+### 9. cli.hpp - Command Line Interface
+```cpp
+#pragma once
+#include "models.hpp"
+#include <string>
+#include <optional>
+
+namespace cmdvault::cli {
+
+struct CliArgs {
+    std::optional<std::string> search_query;
+    std::optional<std::string> copy_query;
+    bool list_all = false;
+    std::optional<std::tuple<std::string, std::string, std::string>> add_command;
+    bool launch_tui = true;
+};
+
+CliArgs parse_args(int argc, char* argv[]);
+void handle_cli_commands(const CliArgs& args);
+
+// CLI operations
+void cli_search(const std::string& query);
+void cli_copy(const std::string& query);
+void cli_list_all();
+void cli_add_command(const std::string& name, const std::string& cmd, const std::string& desc);
+
+} // namespace cmdvault::cli
+```
+
+### 10. main.cpp - Entry Point
+```cpp
+#include "cli.hpp"
+#include "ui.hpp"
+#include "app.hpp"
+#include <iostream>
+#include <exception>
+
+int main(int argc, char* argv[]) {
+    try {
+        auto args = cmdvault::cli::parse_args(argc, argv);
+        
+        if (args.launch_tui) {
+            cmdvault::App app;
+            cmdvault::ui::UI ui(app);
+            ui.run();
+        } else {
+            cmdvault::cli::handle_cli_commands(args);
+        }
+        
+        return 0;
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+}
+```
+
+## 🔨 CMakeLists.txt Configuration
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(cmd-vault-cpp VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find dependencies
+find_package(PkgConfig REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(cxxopts REQUIRED)
+find_package(ftxui REQUIRED)
+find_package(Threads REQUIRED)
+
+# Source files
+set(SOURCES
+    src/main.cpp
+    src/app.cpp
+    src/cli.cpp  
+    src/handler.cpp
+    src/models.cpp
+    src/placeholders.cpp
+    src/storage.cpp
+    src/ui.cpp
+    src/utils.cpp
+)
+
+# Create executable
+add_executable(cmd-vault ${SOURCES})
+
+# Include directories
+target_include_directories(cmd-vault PRIVATE include)
+
+# Link libraries
+target_link_libraries(cmd-vault 
+    nlohmann_json::nlohmann_json
+    cxxopts::cxxopts
+    ftxui::screen
+    ftxui::dom  
+    ftxui::component
+    Threads::Threads
+)
+
+# Compiler flags
+target_compile_options(cmd-vault PRIVATE
+    -Wall -Wextra -Wpedantic
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:Debug>:-g -fsanitize=address>
+)
+
+# Install target
+install(TARGETS cmd-vault DESTINATION bin)
+```
+
+## 🛠️ Key Implementation Differences from Rust
+
+### Memory Management
+- Use smart pointers (`std::unique_ptr`, `std::shared_ptr`) instead of Rust's ownership
+- RAII for resource management
+- Optional type (`std::optional`) for nullable values
+
+### Error Handling  
+- Use exceptions for error propagation instead of `Result<T, E>`
+- Return `std::optional` for operations that might fail
+- Validate inputs and provide meaningful error messages
+
+### String Handling
+- Use `std::string` and `std::string_view` for efficiency
+- Be careful with string lifetime and copies
+- Use `const std::string&` for parameters to avoid copies
+
+### Collections
+- `std::vector` instead of `Vec`
+- `std::map`/`std::unordered_map` for key-value storage
+- Use algorithms from `<algorithm>` for operations like `sort`, `find_if`
+
+### Async/Threading
+- Use `std::thread` and `std::async` if needed
+- Mutex (`std::mutex`) for thread safety
+- Atomic operations (`std::atomic`) for simple shared state
+
+## 🔍 Platform-Specific Considerations
+
+### Clipboard Access
+```cpp
+// Cross-platform clipboard (implement per OS)
+#ifdef _WIN32
+    #include <windows.h>
+    // Use Windows clipboard API
+#elif __APPLE__
+    // Use macOS pasteboard
+    system("echo 'text' | pbcopy");
+#elif __linux__
+    // Use xclip or xsel
+    system("echo 'text' | xclip -selection clipboard");
+#endif
+```
+
+### File Paths
+```cpp
+#include <filesystem>
+
+// Use std::filesystem for cross-platform paths
+auto home = std::getenv("HOME");  // Linux/macOS
+#ifdef _WIN32
+    home = std::getenv("USERPROFILE");  // Windows
+#endif
+```
+
+## 🧪 Testing Framework
+
+Use Google Test for unit testing:
+
+```cpp
+// test_utils.cpp
+#include <gtest/gtest.h>
+#include "utils.hpp"
+
+TEST(UtilsTest, SearchFindsMatches) {
+    std::vector<CommandItem> items = {
+        {"Test Command", "echo test", "Test description", 1000}
+    };
+    
+    auto results = cmdvault::utils::find_matching_items(items, "test");
+    EXPECT_EQ(results.size(), 1);
+    EXPECT_EQ(results[0].name, "Test Command");
+}
+```
+
+## 🚀 Build Commands
+
+```bash
+# Debug build
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+make -j4
+
+# Release build  
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j4
+
+# Run tests
+ctest --verbose
+
+# Install globally
+sudo make install
+```
+
+## 📝 Additional Notes
+
+### Performance Optimizations
+- Use `std::string_view` for read-only string parameters
+- Reserve vector capacity when size is known
+- Use move semantics (`std::move`) to avoid unnecessary copies
+- Consider using `std::span` for array-like parameters (C++20)
+
+### Code Quality
+- Use static analysis tools (`clang-tidy`, `cppcheck`)
+- Enable all compiler warnings (`-Wall -Wextra -Wpedantic`)
+- Use address sanitizer in debug builds (`-fsanitize=address`)
+- Follow modern C++ guidelines (C++ Core Guidelines)
+
+### Cross-Platform Compatibility
+- Test on Windows, macOS, and Linux
+- Use CMake for portable build configuration
+- Avoid platform-specific APIs where possible
+- Use feature detection rather than OS detection
+
+This implementation plan provides a complete roadmap for recreating the Rust cmd-vault in modern C++ while maintaining all the original functionality and features.

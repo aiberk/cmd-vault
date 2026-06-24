@@ -295,6 +295,20 @@ fn initiate_copy(app: &mut App) {
 
 /// Copies the given string to clipboard and transitions to the CopiedConfirm dialog.
 fn copy_to_clipboard(app: &mut App, text: &str) {
+    // Try platform-specific clipboard first
+    match crate::platform::copy_to_clipboard(text) {
+        Ok(()) => {
+            app.last_copied = text.to_string();
+            app.input_mode = InputMode::CopiedConfirm;
+            app.status_message = "✅ Copied to clipboard!".into();
+            return;
+        }
+        Err(e) => {
+            eprintln!("Platform clipboard failed: {}", e);
+        }
+    }
+
+    // Fallback to copypasta crate
     match ClipboardContext::new() {
         Ok(mut ctx) => {
             match ctx.set_contents(text.to_string()) {

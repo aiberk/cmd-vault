@@ -15,9 +15,6 @@ pub const MAX_DESC_LENGTH: usize = 500;
 /// Default status message shown in normal mode
 pub const DEFAULT_STATUS: &str = "Ready";
 
-/// File name for the command vault storage
-pub const VAULT_FILENAME: &str = ".cmd-vault.json";
-
 /// Default search mode status message
 pub const SEARCH_MODE_STATUS: &str = "SEARCH MODE ACTIVE";
 
