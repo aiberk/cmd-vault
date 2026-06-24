@@ -61,9 +61,33 @@ chmod +x scripts/*.sh
 - Links to relevant documentation
 - Provides contribution tips
 
-### ✅ Quality Assurance
+### CI/CD Management
+#### `ci-status.sh`
+**Purpose**: Check whether CI/CD workflows are enabled or disabled
+```bash
+./scripts/ci-status.sh
+```
+- Shows current workflow status
+- Explains what enabled/disabled means
+- Lists available management commands
 
-#### `dev-check.sh`
+#### `ci-enable.sh`
+**Purpose**: Enable GitHub Actions CI/CD workflows
+```bash
+./scripts/ci-enable.sh
+```
+- Enables automatic testing on pushes
+- Enables automated releases on tags
+- Starts using GitHub Actions minutes
+
+#### `ci-disable.sh`  
+**Purpose**: Disable GitHub Actions CI/CD workflows
+```bash
+./scripts/ci-disable.sh
+```
+- Stops automatic testing and building
+- Preserves all CI/CD code for future use
+- Zero GitHub Actions usage
 **Purpose**: Comprehensive quality checks before commits
 ```bash
 ./scripts/dev-check.sh
@@ -146,7 +170,8 @@ When adding new scripts:
 
 ## 📚 Related Documentation
 
-- `../REFACTORING-ROADMAP.md` - Detailed refactoring plan
-- `../ARCHITECTURE-SUMMARY.md` - Project architecture  
-- `../UI-CONTRIBUTION-GUIDE.md` - UI development guide
-- `../RUST-DEV-WORKFLOW.md` - Rust-specific practices
+- `../docs/README.md` - Complete documentation index
+- `../docs/REFACTORING-ROADMAP.md` - Detailed refactoring plan
+- `../docs/ARCHITECTURE-SUMMARY.md` - Project architecture  
+- `../docs/UI-CONTRIBUTION-GUIDE.md` - UI development guide
+- `../docs/RUST-DEV-WORKFLOW.md` - Rust-specific practices

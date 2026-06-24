@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Docker Build",
+    "command": "docker build -t <image_name> .",
+    "desc": "Build Docker image with specified name",
+    "created_at": 1640995200
+  },
+  {
+    "name": "Git Commit",
+    "command": "git commit -m \"<message>\"",
+    "desc": "Commit changes with message",
+    "created_at": 1640995260
+  },
+  {
+    "name": "SSH Connect",
+    "command": "ssh <user>@<host>",
+    "desc": "Connect to remote server via SSH",
+    "created_at": 1640995320
+  },
+  {
+    "name": "FFmpeg Convert",
+    "command": "ffmpeg -i <input> -c:v libx264 <output>",
+    "desc": "Convert video using H.264 codec",
+    "created_at": 1640995380
+  },
+  {
+    "name": "System Update",
+    "command": "sudo apt update && sudo apt upgrade -y",
+    "desc": "Update system packages on Ubuntu/Debian",
+    "created_at": 1640995440
+  }
+]

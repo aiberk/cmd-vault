@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  cmd-vault:
+    build: .
+    container_name: cmd-vault
+    volumes:
+      - cmd_vault_data:/home/cmdvault/.config
+    environment:
+      - RUST_LOG=info
+      - CMD_VAULT_CONFIG=/home/cmdvault/.config/cmd-vault.json
+    stdin_open: true
+    tty: true
+
+  # Example: Development environment with mounted source
+  cmd-vault-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: cmd-vault-dev
+    volumes:
+      - .:/usr/src/app
+      - cargo_cache:/usr/local/cargo/registry
+      - target_cache:/usr/src/app/target
+    working_dir: /usr/src/app
+    command: cargo run
+    stdin_open: true
+    tty: true
+
+volumes:
+  cmd_vault_data:
+  cargo_cache:
+  target_cache:

@@ -55,9 +55,10 @@ echo "🔍 FINDING YOUR WAY AROUND:"
 echo "=========================="
 echo "New to the codebase? Start here:"
 echo "  1. 📖 README.md - Project overview and setup"
-echo "  2. 🏗️  ARCHITECTURE-SUMMARY.md - High-level architecture"
-echo "  3. 🎨 UI-ARCHITECTURE.md - UI component structure"  
-echo "  4. 🔧 REFACTORING-ROADMAP.md - Current improvement plans"
+echo "  2. 📚 docs/README.md - Complete documentation index"
+echo "  3. 🏗️  docs/ARCHITECTURE-SUMMARY.md - High-level architecture"
+echo "  4. 🎨 docs/UI-ARCHITECTURE.md - UI component structure"  
+echo "  5. 🔧 docs/REFACTORING-ROADMAP.md - Current improvement plans"
 echo
 
 echo "🛠️ DEVELOPMENT TOOLS:"
@@ -70,14 +71,14 @@ echo
 
 echo "💡 CONTRIBUTION TIPS:"
 echo "=================="
-echo "  🎯 Focus areas: Files over 300 lines need refactoring"
-echo "  📏 Target: Keep new files under 200 lines"
+echo "  🎯 Focus areas: Files over 500 lines need refactoring"
+echo "  📏 Target: Keep new files under 400 lines"
 echo "  🧪 Testing: Run 'cargo test' before submitting"
 echo "  📋 Format: Run 'cargo fmt' to maintain style"
 echo "  🔍 Lint: Run 'cargo clippy' to catch issues"
 echo
 
 echo "For detailed contribution guidelines:"
-echo "  📘 UI-CONTRIBUTION-GUIDE.md - UI component development"  
-echo "  🦀 RUST-DEV-WORKFLOW.md - Rust-specific practices"
-echo "  🖥️  PLATFORM-DEV-GUIDE.md - Cross-platform development"
+echo "  📘 docs/UI-CONTRIBUTION-GUIDE.md - UI component development"  
+echo "  🦀 docs/RUST-DEV-WORKFLOW.md - Rust-specific practices"
+echo "  🖥️  docs/PLATFORM-DEV-GUIDE.md - Cross-platform development"

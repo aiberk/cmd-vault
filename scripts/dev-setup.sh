@@ -102,9 +102,9 @@ echo "  ./scripts/code-stats.sh         - View code metrics"
 echo "  ./scripts/refactor-check.sh     - Check refactoring progress"
 echo
 echo "📚 Documentation:"
-echo "  README.md                    - Project overview"
-echo "  ARCHITECTURE-SUMMARY.md     - Architecture guide"  
-echo "  UI-CONTRIBUTION-GUIDE.md    - UI development guide"
-echo "  REFACTORING-ROADMAP.md      - Current improvement plans"
+echo "  docs/README.md               - Documentation index"
+echo "  docs/ARCHITECTURE-SUMMARY.md - Architecture guide"  
+echo "  docs/UI-CONTRIBUTION-GUIDE.md - UI development guide"
+echo "  docs/REFACTORING-ROADMAP.md  - Current improvement plans"
 echo
 echo "Happy coding! 🦀✨"

@@ -111,7 +111,7 @@ echo
 echo "💡 NEXT ACTIONS:"
 echo "==============="
 echo "1. Run './scripts/code-stats.sh' for detailed visualization"
-echo "2. Check 'REFACTORING-ROADMAP.md' for detailed plan"
+echo "2. Check 'docs/REFACTORING-ROADMAP.md' for detailed plan"
 echo "3. Start with quick wins (delete unused files)"
 echo "4. Use modular splits for large files"
 echo

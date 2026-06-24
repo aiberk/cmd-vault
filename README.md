@@ -151,6 +151,28 @@ src/
 └── constants.rs     # Application constants and defaults
 ```
 
+For detailed architecture information, see [docs/ARCHITECTURE-SUMMARY.md](docs/ARCHITECTURE-SUMMARY.md).
+
+## 📚 Documentation
+
+Comprehensive developer documentation is available in the [`docs/`](docs/) folder:
+
+### 🚀 **Getting Started**
+- **[📋 Quick Start Scripts](docs/QUICK-START-SCRIPTS.md)** - Essential development commands
+- **[🏗️ Architecture Summary](docs/ARCHITECTURE-SUMMARY.md)** - High-level system design
+- **[🦀 Rust Dev Workflow](docs/RUST-DEV-WORKFLOW.md)** - Rust-specific practices
+
+### 🎨 **UI Development**  
+- **[🎨 UI Architecture](docs/UI-ARCHITECTURE.md)** - Component structure
+- **[🤝 UI Contribution Guide](docs/UI-CONTRIBUTION-GUIDE.md)** - How to work with UI
+
+### 🔧 **Platform & Tools**
+- **[🖥️ Platform Dev Guide](docs/PLATFORM-DEV-GUIDE.md)** - Cross-platform development
+- **[🔧 Refactoring Roadmap](docs/REFACTORING-ROADMAP.md)** - Code organization goals
+- **[🛠️ Scripts Documentation](scripts/README.md)** - Development tools
+
+**👆 New contributors: Start with [docs/README.md](docs/README.md) for the complete guide!**
+
 ## 💾 Data Storage
 
 Commands are stored in `~/.cmd-vault.json` as pretty-printed JSON:
