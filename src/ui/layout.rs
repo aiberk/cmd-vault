@@ -1,8 +1,7 @@
 /// Layout components - navbar, workspace, footer
-/// 
+///
 /// These are the main structural elements of the UI.
 /// Contributors working on layout and navigation work here.
-
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -169,13 +168,12 @@ pub fn draw_details_panel(f: &mut Frame, app: &mut App, area: Rect) {
         return;
     }
 
-    let empty_notice = Paragraph::new("\n\n   Select a command to view details.")
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" Command Details ")
-                .border_style(Style::default().fg(Color::DarkGray)),
-        );
+    let empty_notice = Paragraph::new("\n\n   Select a command to view details.").block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Command Details ")
+            .border_style(Style::default().fg(Color::DarkGray)),
+    );
     f.render_widget(empty_notice, area);
 }
 
@@ -188,7 +186,11 @@ pub fn draw_footer(f: &mut Frame, app: &App, area: Rect) {
     };
 
     let footer = Paragraph::new(footer_content)
-        .block(Block::default().borders(Borders::ALL).border_style(Style::default().fg(Color::DarkGray)))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::DarkGray)),
+        )
         .style(Style::default().fg(Color::Gray));
 
     f.render_widget(footer, area);

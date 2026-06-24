@@ -1,8 +1,7 @@
 /// Modal dialogs and overlays
-/// 
+///
 /// All modal windows are defined here. This makes it easy for contributors
 /// to add new modals or modify existing ones without hunting through a massive file.
-
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout},
@@ -62,7 +61,7 @@ pub fn draw_add_modal(f: &mut Frame, app: &App) {
 
     let current_field = match app.input_mode {
         InputMode::AddName => "Name",
-        InputMode::AddCommand => "Command", 
+        InputMode::AddCommand => "Command",
         InputMode::AddDesc => "Description",
         _ => "Name",
     };
@@ -73,17 +72,38 @@ pub fn draw_add_modal(f: &mut Frame, app: &App) {
         Line::from(""),
         create_input_field("Name:", &app.new_name, app.input_mode == InputMode::AddName),
         Line::from(""),
-        create_input_field("Command:", &app.new_command, app.input_mode == InputMode::AddCommand),
+        create_input_field(
+            "Command:",
+            &app.new_command,
+            app.input_mode == InputMode::AddCommand,
+        ),
         Line::from(""),
-        create_input_field("Description:", &app.new_desc, app.input_mode == InputMode::AddDesc),
+        create_input_field(
+            "Description:",
+            &app.new_desc,
+            app.input_mode == InputMode::AddDesc,
+        ),
         Line::from(""),
         Line::from(vec![
             Span::raw("  "),
-            Span::styled("[Tab]", Style::default().fg(Color::Blue).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "[Tab]",
+                Style::default()
+                    .fg(Color::Blue)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" Next  "),
-            Span::styled("[Enter]", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "[Enter]",
+                Style::default()
+                    .fg(Color::Green)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" Save  "),
-            Span::styled("[Esc]", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "[Esc]",
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" Cancel"),
         ]),
         Line::from(""),

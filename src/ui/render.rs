@@ -1,13 +1,15 @@
+use crate::app::{App, InputMode};
+use crate::ui::{layout::*, modals::*};
 /// Main rendering coordinator - orchestrates all UI components
-/// 
+///
 /// This is the entry point for UI rendering. It coordinates:
 /// - Main layout (navbar, content, footer)  
 /// - Modal overlays
 /// - State-dependent UI elements
-
-use ratatui::{Frame, layout::{Constraint, Direction, Layout}};
-use crate::app::{App, InputMode};
-use crate::ui::{layout::*, modals::*};
+use ratatui::{
+    Frame,
+    layout::{Constraint, Direction, Layout},
+};
 
 /// Renders the entire UI for a single frame.
 /// This is the main entry point called by the application loop.
@@ -16,9 +18,9 @@ pub fn draw(f: &mut Frame, app: &mut App) {
     let main_layout = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),  // Navbar
-            Constraint::Min(5),     // Main content area  
-            Constraint::Length(3),  // Footer
+            Constraint::Length(3), // Navbar
+            Constraint::Min(5),    // Main content area
+            Constraint::Length(3), // Footer
         ])
         .split(f.area());
 
